@@ -1,7 +1,6 @@
 import random
 import string
 import simulate_printer as sp
-import threading
 
 pre_people_dict = {}  # 当前的在场人数,对应的值为其在一小时内可能的打印次数,默认为1-4
 printer1 = sp.Printer()  # 初始化当前的打印机
@@ -66,6 +65,7 @@ def generate_paper():
     生成待打印的需求,生成后,应该立即将需求添加到待打印队列当中
     :return: 生成的打印需求
     """
+
     global countdown
     while pre_people_dict and countdown > 0.1:
         owner = random.choice(list(pre_people_dict.keys()))
@@ -74,11 +74,11 @@ def generate_paper():
         pre_people_dict[owner] -= 1
         if pre_people_dict[owner] == 0:
             del pre_people_dict[owner]
-        paper()
+        return paper()
 
 
 if __name__ == "__main__":
     generate_people()
     print(pre_people_dict)
-    while pre_people_dict:
+    while pre_people_dict and countdown > 0.1:
         generate_paper()
