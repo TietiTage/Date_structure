@@ -64,16 +64,14 @@ def generate_paper():
     生成待打印的需求,生成后,应该立即将需求添加到待打印队列当中
     :return: 生成的打印需求
     """
-    countdown = 60  # 初始倒计时设为60分钟
-    while pre_people_dict:
+    countdown = 60.0  # 初始倒计时设为60分钟
+    while pre_people_dict and countdown > 0.1:
         owner = random.choice(list(pre_people_dict.keys()))
-        countdown = random.randrange(0, countdown)
+        countdown = random.uniform(0, countdown)
         paper = Paper(countdown, owner)
         pre_people_dict[owner] -= 1
         if pre_people_dict[owner] == 0:
             del pre_people_dict[owner]
-        if countdown <= 0:
-            break
         return paper()
 
-if __name__ == '__main__':
+

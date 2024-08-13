@@ -2,6 +2,7 @@ import queue
 import sys
 import time
 import threading
+import uuid
 
 
 def check(func):
@@ -100,6 +101,7 @@ class Printer:
         with (self.__lock):  # 保持buffer对属性访问的优先权
             if self.__available and not self.__queue.empty():
                 script = self.__queue.get()
+                # print("文件已经入队")
                 return script
 
     def record(self, **kwargs):
@@ -132,6 +134,9 @@ class Printer:
             info_dict["wait_time"] = round(info_dict["wait_time"], 2)
         # 将信息添加到记录列表中
         self.__res_print_info.append(info_dict)
+        print(self.__res_print_info)
+        self.log()
+        # print("文件信息已经保存到列表中")
 
     def update_waiting_times(self, elapsed_time):
         """
@@ -155,39 +160,40 @@ class Printer:
         打印当前的文件,文件由buffer给出,同时调用record记录文件的打印数据信息
         :return: None
         """
-        while not self.__queue.empty():
-            # 记录文件的相关信息
-            page, quality, name, owner, wait_time, creat_time = \
-                (script[key] for key in ["page", "quality", "name", "owner", "wait_time", "creat_time"])
-            self.set_mode(quality)
-            count = self.__current_speed * page
-            self.update_waiting_times(count)  # 更新后续队列当中的每个文件的等待时间
-            if script and creat_time-wait_time > 0.01:
-                self.__available = False
 
-                # 记录打印的状态
-                self.record(
-                    name=name,
-                    page=page,
-                    count=count,
-                    quality=quality,
-                    owner=owner,
-                    wait_time=wait_time,
-                    creat_time=creat_time)
+        # 记录文件的相关信息
+        page, quality, name, owner, wait_time, creat_time = \
+            (script[key] for key in ["page", "quality", "name", "owner", "wait_time", "creat_time"])
+        self.set_mode(quality)
+        count = self.__current_speed * page
+        self.update_waiting_times(count)  # 更新后续队列当中的每个文件的等待时间
+        if script and creat_time-wait_time > 0.01:
+            self.__available = False
 
-                self.__available = True
-            else:
-                self.end_print()
+            # 记录打印的状态
+            self.record(
+                name=name,
+                page=page,
+                count=count,
+                quality=quality,
+                owner=owner,
+                wait_time=wait_time,
+                creat_time=creat_time)
+
+            self.__available = True
+        else:
+            self.end_print()
 
     def log(self):
         """
         将打印记录保存到日志文件中
         :return: None
         """
-        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
-        with open(f"{timestamp}.txt", "w+", encoding="utf-8") as file:
+
+        with open(f"Mylog.txt", "w+", encoding="utf-8") as file:
             for item in self.__res_print_info:
                 file.write(f"{item}\n", )
+            file.write("end \n \n")
         print(f"本次运行的总文件日志已经保存到{file.name}当中")
 
     def __str__(self):
@@ -208,3 +214,16 @@ class Printer:
         print("运行时长已到达上限,或打印的文件为空,日志已经保存")
         print(self)
         sys.exit()
+
+if __name__ == "__main__":
+    printer = Printer()
+    test_script = {
+        "page": 5,
+        "name": "TestDocument",
+        "quality": "nor",
+        "creat_time": 0.2,
+        "wait_time": 0.0,
+        "owner": "User1"
+    }
+    printer.add_script(test_script)
+
