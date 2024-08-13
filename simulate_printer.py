@@ -3,9 +3,6 @@ import sys
 import time
 import threading
 
-# 打印机运行的时间,以分钟计算,为倒计时
-current_time = 60
-
 
 def check(func):
     """
@@ -16,12 +13,16 @@ def check(func):
 
     def wrapper(ins, *scripts: dict):
         for script in scripts:
-            if script.keys() != {"page", "name", "quality"}:
-                raise KeyError("格式错误!key应为page,name,quality")
+            if script.keys() != {"page", "name", "quality", "creat_time", "wait_time", "owner"}:
+                raise KeyError("invalid form!key shall in {page, name, quality, creat_time, wait_time, owner}")
             if not isinstance(script["page"], int) or script["page"] < 1:
-                raise ValueError("page 应该为正整数")
+                raise ValueError("page should be positive int")
             if script["quality"] not in ["nor", "draft"]:
                 raise ValueError("invalid mode, use nor or draft")
+            if not isinstance(script["creat_time"], float):
+                raise ValueError("invalid time, use float")
+            if not isinstance(script["wait_time"], float):
+                raise ValueError("invalid time, use float")
         return func(ins, *scripts)
 
     return wrapper
@@ -38,7 +39,7 @@ class Printer:
                         格式为{name : ({打印耗时:}, {质量:}, {页数:},{需求提出人:}},值为元组
         self.__lock = threading.Lock() ,线程锁,确保当buffer访问打印机和队列状态时,其他方法无法修改buffer要访问的状态
         self.__total_consume = 0 ,文件打印的总耗时
-
+        self.__total_wait = 0, 文件的总等待时长
         """
         self.__lock = threading.Lock()
         self.__available = True
@@ -47,6 +48,7 @@ class Printer:
         self.__current_speed = 0
         self.__res_print_info = []
         self.__total_consume = 0
+        self.__total_wait = 0
 
     def is_available(self):
         """
@@ -75,67 +77,107 @@ class Printer:
     @check
     def add_script(self, *script: dict):
         """
-        向队列当中加入文件
-        :param script: 应该为字典,格式:{page: int, quality: "nor" or "draft", name: str }
+        向队列当中加入文件,同时立刻打开打印机
+        :param script: 应该为字典,
+        格式:{page: int,
+            quality: "nor" or "draft",
+            name: str,
+            creat_time: countdown,
+            owner: owner_name
+            wait_time: 0}
         :return: None
         """
         for item in script:
             self.__queue.put(item)
+        self.my_print(self.buffer())
 
     def buffer(self):
         """
-        从队列中获取文件
+        从队列中获取文件,
         :return: script: 一部字典,对应一个模拟打印的对象,由buffer弹出
         """
-        time.sleep(0.01)
-        with self.__lock:  # 保持buffer对属性访问的优先权
+        time.sleep(0.1)  # 防止过于频繁地访问
+        with (self.__lock):  # 保持buffer对属性访问的优先权
             if self.__available and not self.__queue.empty():
                 script = self.__queue.get()
                 return script
 
-    def record(self, name: str, page: int, count: float, quality: str, demander: str, wait_time: float):
+    def record(self, **kwargs):
         """
-        向记录的列表当中添加文件信息,格式由info_dict给出
-        :param name: 文件名称
-        :param page: 文件页数, int
-        :param count: 打印耗时的秒数,保留2位数字
-        :param quality: 为nor or draft
-        :param demander: 文件打印的提出者
-        :param wait_time: 文件从提出打印到打印的等待时间,保留两位数字
+        向记录的列表当中添加文件信息，支持动态字段扩展。
+        :param kwargs: 动态传递的文件信息
         :return: None
         """
-        info_dict = {
-            name:
-                (
-        {"耗时": round(count, 2)},
-        {"质量": quality},
-        {"页数": page},
-        {"需求者": demander},
-        {"等待时间": round(wait_time, 2)}
-            )
+        # 默认字段，可以根据需要扩展
+        default_fields = {
+            "name": None,
+            "page": None,
+            "count": None,
+            "quality": None,
+            "owner": None,
+            "wait_time": None,
+            "creat_time": None,
         }
-        self.__total_consume += count
+
+        # 使用提供的字段更新默认字段
+        info_dict = {**default_fields, **kwargs}
+
+        # 更新总耗时
+        if "count" in info_dict and info_dict["count"] is not None:
+            self.__total_consume += round(info_dict["count"], 2)
+            info_dict["count"] = round(info_dict["count"], 2)
+        # 更新总等待时间
+        if "wait_time" in info_dict and info_dict["wait_time"] is not None:
+            self.__total_wait += round(info_dict["wait_time"], 2)
+            info_dict["wait_time"] = round(info_dict["wait_time"], 2)
+        # 将信息添加到记录列表中
         self.__res_print_info.append(info_dict)
 
-    def my_print(self):
+    def update_waiting_times(self, elapsed_time):
+        """
+        更新队列中所有文件的等待时间。
+        :param elapsed_time: 当前打印任务所花费的时间（分钟）。
+        :return: None
+        """
+        # 使用队列的queue内置属性进行原地更新
+        with self.__lock: # 保持线程安全
+            temp_list = list(self.__queue.queue)  # 获取队列中所有元素的副本
+            for paper in temp_list:
+                paper["wait_time"] += elapsed_time  # 更新等待时间
+
+            # 将更新后的列表替换为队列内容
+            self.__queue.queue.clear()  # 清空原队列
+            for paper in temp_list:
+                self.__queue.put(paper)  # 重新加入更新后的元素
+
+    def my_print(self, script):
         """
         打印当前的文件,文件由buffer给出,同时调用record记录文件的打印数据信息
         :return: None
         """
         while not self.__queue.empty():
-            script = self.buffer()
-            if script:
-                # 记录文件的相关信息
-                page, quality, name, demander, wait_time = \
-                    (script[key] for key in ["page", "quality", "name", "demander", "wait_time"])
-
-                self.set_mode(quality)
-                count = self.__current_speed * page
+            # 记录文件的相关信息
+            page, quality, name, owner, wait_time, creat_time = \
+                (script[key] for key in ["page", "quality", "name", "owner", "wait_time", "creat_time"])
+            self.set_mode(quality)
+            count = self.__current_speed * page
+            self.update_waiting_times(count)  # 更新后续队列当中的每个文件的等待时间
+            if script and creat_time-wait_time > 0.01:
                 self.__available = False
-                self.record(name, page, count, quality,demander, wait_time)  # 记录打印的状态
+
+                # 记录打印的状态
+                self.record(
+                    name=name,
+                    page=page,
+                    count=count,
+                    quality=quality,
+                    owner=owner,
+                    wait_time=wait_time,
+                    creat_time=creat_time)
+
                 self.__available = True
-                global current_time
-                current_time -= count  # 计时器减去打印的时间
+            else:
+                self.end_print()
 
     def log(self):
         """
@@ -153,15 +195,16 @@ class Printer:
         返回打印机的总耗时
         :return: str
         """
-        return f"打印所有文件总耗时:{self.__total_consume}"
+        return (f"打印所有文件总耗时:{self.__total_consume}\n"
+                f"所有文件的总等待时间为:{self.__total_wait}\n")
 
     def end_print(self):
         """
-        强制清空打印的队列,使得打印机回到空闲的状态,不再打印
+        强制清空打印的队列,使得打印机回到空闲的状态,不再打印,
         :return: None
         """
-        with self.__lock:
-            while not self.__queue.empty():
-                self.__queue.get()
-            self.__available = True
-            sys.exit()
+        self.__available = True
+        self.log()
+        print("运行时长已到达上限,或打印的文件为空,日志已经保存")
+        print(self)
+        sys.exit()
