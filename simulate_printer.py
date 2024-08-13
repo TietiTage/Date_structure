@@ -190,11 +190,10 @@ class Printer:
         :return: None
         """
 
-        with open(f"Mylog.txt", "w+", encoding="utf-8") as file:
+        with open(f"Mylog.txt", "a+", encoding="utf-8") as file:
             for item in self.__res_print_info:
                 file.write(f"{item}\n", )
-            file.write("end \n \n")
-        print(f"本次运行的总文件日志已经保存到{file.name}当中")
+        # print(f"本次运行的总文件日志已经保存到{file.name}当中")
 
     def __str__(self):
         """

@@ -5,6 +5,7 @@ import threading
 
 pre_people_dict = {}  # 当前的在场人数,对应的值为其在一小时内可能的打印次数,默认为1-4
 printer1 = sp.Printer()  # 初始化当前的打印机
+countdown = 60.0 # 初始化第一个文件的倒计时时间,目前设置为60min
 
 
 def generate_people():
@@ -40,7 +41,7 @@ class Paper(object):
             "name": ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10)),
             "owner": owner,
             "creat_time": countdown,
-            "wait_time": 0
+            "wait_time": 0.0
         }
         self.is_print = False
 
@@ -56,6 +57,7 @@ class Paper(object):
         :return: 文件的具体参数,即为self.script
         """
         self.is_print = True
+        print(self.script)
         return self.script
 
 
@@ -64,7 +66,7 @@ def generate_paper():
     生成待打印的需求,生成后,应该立即将需求添加到待打印队列当中
     :return: 生成的打印需求
     """
-    countdown = 60.0  # 初始倒计时设为60分钟
+    global countdown, pre_people_dict
     while pre_people_dict and countdown > 0.1:
         owner = random.choice(list(pre_people_dict.keys()))
         countdown = random.uniform(0, countdown)
@@ -74,4 +76,12 @@ def generate_paper():
             del pre_people_dict[owner]
         return paper()
 
-
+if __name__ == "__main__":
+    generate_people()
+    print(pre_people_dict)
+    while pre_people_dict:
+        paper = generate_paper()
+        if paper:
+            printer1.add_script(paper)
+        else:
+            break
