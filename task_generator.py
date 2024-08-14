@@ -4,7 +4,7 @@ import simulate_printer as sp
 import numpy as np
 
 pre_people_dict = {}  # 当前的在场人数,对应的值为其在一小时内可能的打印次数,默认为1-4
-printer1 = sp.Printer()  # 初始化当前的打印机
+
 countdown = 60.0  # 初始化第一个文件的倒计时时间,目前设置为60min
 total_print_freq = 0 # 所有人可能发起的总打印需求次数
 
@@ -17,7 +17,7 @@ def generate_people():
     :return: None
     """
     global pre_people_dict, total_print_freq
-    ran_amount = random.randint(1, 10)
+    ran_amount = random.randint(7, 13)
     for i in range(ran_amount):
         ran_name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
         ran_fre = random.randint(1, 4)
@@ -60,7 +60,7 @@ class Paper(object):
         :return: 文件的具体参数,即为self.script
         """
         self.is_print = True
-        print(self.script)
+        # print(self.script)
         return self.script
 
 
@@ -87,7 +87,11 @@ def generate_paper():
 
 
 if __name__ == "__main__":
+
+    printer1 = sp.Printer()  # 初始化当前的打印机
     generate_people()
     print(pre_people_dict)
     # generate_paper()
+    printer1.add_script(generate_paper())
+    printer1.add_script(generate_paper())
     printer1.add_script(generate_paper())
