@@ -2,7 +2,6 @@ import queue
 import sys
 import time
 import threading
-import uuid
 
 
 def check(func):
@@ -134,7 +133,7 @@ class Printer:
             info_dict["wait_time"] = round(info_dict["wait_time"], 2)
         # 将信息添加到记录列表中
         self.__res_print_info.append(info_dict)
-        print(self.__res_print_info)
+        # print(self.__res_print_info)
         self.log()
         # print("文件信息已经保存到列表中")
 
@@ -145,8 +144,9 @@ class Printer:
         :return: None
         """
         # 使用队列的queue内置属性进行原地更新
-        with self.__lock: # 保持线程安全
+        with self.__lock:  # 保持线程安全
             temp_list = list(self.__queue.queue)  # 获取队列中所有元素的副本
+            # print(temp_list)
             for paper in temp_list:
                 paper["wait_time"] += elapsed_time  # 更新等待时间
 
@@ -160,14 +160,13 @@ class Printer:
         打印当前的文件,文件由buffer给出,同时调用record记录文件的打印数据信息
         :return: None
         """
-
-        # 记录文件的相关信息
         page, quality, name, owner, wait_time, creat_time = \
             (script[key] for key in ["page", "quality", "name", "owner", "wait_time", "creat_time"])
         self.set_mode(quality)
         count = self.__current_speed * page
         self.update_waiting_times(count)  # 更新后续队列当中的每个文件的等待时间
-        if script and creat_time-wait_time > 0.01:
+        # 记录文件的相关信息
+        if script is not None and creat_time - wait_time > 0.1:
             self.__available = False
 
             # 记录打印的状态
@@ -191,9 +190,10 @@ class Printer:
         """
 
         with open(f"Mylog.txt", "a+", encoding="utf-8") as file:
+            file.seek(0, 2)
             for item in self.__res_print_info:
                 file.write(f"{item}\n", )
-        # print(f"本次运行的总文件日志已经保存到{file.name}当中")
+        print(f"本次运行的总文件日志已经保存到{file.name}当中")
 
     def __str__(self):
         """
@@ -214,6 +214,7 @@ class Printer:
         print(self)
         sys.exit()
 
+
 if __name__ == "__main__":
     printer = Printer()
     test_script = {
@@ -225,4 +226,3 @@ if __name__ == "__main__":
         "owner": "User1"
     }
     printer.add_script(test_script)
-
