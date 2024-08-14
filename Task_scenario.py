@@ -1,43 +1,22 @@
-import threading
-import time
-from simulate_printer import Printer
-from task_generator import generate_people, generate_paper
+import simulate_printer as sp
+import task_generator as gt
+from concurrent.futures import ThreadPoolExecutor
 
-# 创建打印机实例
-printer = Printer()
+def print_task(printer):
+    printer.my_print()
 
-# 定义一个标志来控制线程运行
-running = True
-
-def generate_tasks():
-    generate_people()
-    while running:
-        paper = generate_paper()
-        printer.add_script(paper)
-        time.sleep(1)  # 模拟生成任务的时间间隔
-
-def run_printer():
-    while running:
-        paper = printer.buffer()
-        if paper:
-            printer.my_print(paper)
-        time.sleep(0.1)  # 防止打印任务过于频繁
+def generate_task(printer):
+    while True:
+        new_paper = gt.generate_paper()
+        printer.add_script(new_paper)
 
 if __name__ == "__main__":
-    # 创建两个线程，一个用于生成任务，一个用于运行打印机
-    task_thread = threading.Thread(target=generate_tasks)
-    printer_thread = threading.Thread(target=run_printer)
+    gt.generate_people()
+    printer1 = sp.Printer()
 
-    # 启动线程
-    task_thread.start()
-    printer_thread.start()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        executor.submit(print_task, printer1)
+        executor.submit(generate_task, printer1)
 
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        # 在接收到键盘中断（Ctrl+C）时停止运行
-        running = False
-        task_thread.join()
-        printer_thread.join()
-        print("程序已终止")
+# 代码无法正常运行
+# 多线程的开发超出了我目前的能力限制,日后再试

@@ -78,7 +78,7 @@ def generate_paper():
         # # 若所有人会均匀的在某段时间内提出打印的要求,则应该使用泊松分布来计算概率,这里先随机选一下
         # countdown = random.uniform(0, countdown)
         # 泊松过程间隔服从指数分布,基于此更新下一次的时间
-        countdown = countdown - np.random.exponential(1/total_print_freq)
+        countdown = countdown - np.random.exponential(total_print_freq/60)
         total_print_freq -= 1
         pre_people_dict[owner] -= 1
         if pre_people_dict[owner] == 0:

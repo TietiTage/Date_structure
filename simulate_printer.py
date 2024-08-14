@@ -98,7 +98,7 @@ class Printer:
         """
         time.sleep(0.1)  # 防止过于频繁地访问
         with (self.__lock):  # 保持buffer对属性访问的优先权
-            if self.__available:
+            if self.__available and not self.__queue.empty():
                 script = self.__queue.get()
                 # print("文件已经入队")
                 return script
@@ -166,7 +166,7 @@ class Printer:
         count = self.__current_speed * page
         self.update_waiting_times(count)  # 更新后续队列当中的每个文件的等待时间
         # 记录文件的相关信息
-        if script is not None and creat_time - wait_time > 0.2:
+        if script is not None and creat_time - wait_time > 0.1:
             self.__available = False
 
             # 记录打印的状态
@@ -193,7 +193,7 @@ class Printer:
             file.seek(0, 2)
             for item in self.__res_print_info:
                 file.write(f"{item}\n", )
-        # print(f"本次运行的总文件日志已经保存到{file.name}当中")
+        print(f"本次运行的总文件日志已经保存到{file.name}当中")
 
     def __str__(self):
         """
@@ -212,8 +212,7 @@ class Printer:
         self.log()
         print("运行时长已到达上限,或打印的文件为空,日志已经保存")
         print(self)
-        raise sys.exit() # 退出程序
-
+        sys.exit()
 
 
 if __name__ == "__main__":
