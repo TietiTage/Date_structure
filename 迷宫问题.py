@@ -1,7 +1,7 @@
 import numpy as np
 import random as rd
 import sys
-
+# 递归加深度优先遍历
 sys.setrecursionlimit(10000)
 
 
@@ -24,13 +24,13 @@ class Labyrinth:
         self.matrix[0, :] = 1
         self.matrix[:, 0] = 1
         # 为矩阵添加出入口
-        self.enter_col = rd.randint(1, rows - 2)
-        self.exit_col = rd.randint(1, rows - 2)
-        self.matrix[self.enter_col, 0] = 0
-        self.matrix[self.exit_col, -1] = 0
-        self.enter = [self.enter_col, 0]
-        self.exit = [self.exit_col, -1]
-        del mask, self.enter_col, self.exit_col
+        self.enter_row = rd.randint(1, rows - 2)
+        self.exit_row = rd.randint(1, rows - 2)
+        self.matrix[self.enter_row, 0] = 0
+        self.matrix[self.exit_row, -1] = 0
+        self.enter = [self.enter_row, 0]
+        self.exit = [self.exit_row, cols-1]
+        del mask, self.enter_row, self.exit_row
 
     def __str__(self):
         return np.array2string(self.matrix)
@@ -45,7 +45,7 @@ class Turtle:
         self.mar = mar.matrix
         self.start = mar.enter
         self.exit = mar.exit
-        self.current_position = self.start
+        self.current_position = self.start.copy()
         self.path = []
         del mar
 
@@ -71,7 +71,7 @@ class Turtle:
         elif direction == 2 and col > 1 and self.mar[row, col - 1] == 0:
             self.current_position = [row, col - 1]
             return True
-        elif direction == 3 and col < self.mar.shape[1] - 2 and self.mar[row, col + 1] == 0:
+        elif direction == 3 and  self.mar[row, col + 1] == 0: # 这里可能涉及到迷宫的出口,需要特别注意
             self.current_position = [row, col + 1]
             return True
         return False
@@ -80,6 +80,7 @@ class Turtle:
     def move(self):
         # 碰到出口
         if self.current_position == self.exit:
+            self.value = 6
             print("找到出口")
             return True
         # 标记当前位置
@@ -94,14 +95,17 @@ class Turtle:
                 else:
                     self.current_position = self.path.pop()
                     continue
-        return False  # 如果没有路径可回退，返回False
+        if not self.path:
+            print("寻找路径失败")
+            return False  # 如果没有路径可回退，返回False
 
     def __str__(self):
-        return print(self.mar)
+        return np.array2string(self.mar)
+
 
 if __name__ == '__main__':
     labyrinth = Labyrinth(10, 10, 0.7)
     print(labyrinth.matrix)
     turtle = Turtle(labyrinth)
     turtle.move()
-    print(turtle.mar)
+    print(turtle)
