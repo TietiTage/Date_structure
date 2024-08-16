@@ -114,6 +114,7 @@ class Turtle:
             # 如果继续走没有找到出口，回溯继续找
             else:
                 self.current_position = self.path.pop(-1)
+                print(self.current_position)
                 if self.move():
                     return True
 
