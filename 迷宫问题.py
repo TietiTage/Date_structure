@@ -1,6 +1,9 @@
 import numpy as np
 import random as rd
 import sys
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
 # 递归加深度优先遍历
 sys.setrecursionlimit(10000)
 
@@ -29,7 +32,7 @@ class Labyrinth:
         self.matrix[self.enter_row, 0] = 0
         self.matrix[self.exit_row, -1] = 0
         self.enter = [self.enter_row, 0]
-        self.exit = [self.exit_row, cols-1]
+        self.exit = [self.exit_row, cols - 1]
         del mask, self.enter_row, self.exit_row
 
     def __str__(self):
@@ -71,13 +74,14 @@ class Turtle:
         elif direction == 2 and col > 1 and self.mar[row, col - 1] == 0:
             self.current_position = [row, col - 1]
             return True
-        elif direction == 3 and  self.mar[row, col + 1] == 0: # 这里可能涉及到迷宫的出口,需要特别注意
+        elif direction == 3 and self.mar[row, col + 1] == 0:  # 这里可能涉及到迷宫的出口,需要特别注意
             self.current_position = [row, col + 1]
             return True
         return False
 
     # 这个海龟有点蠢
     def move(self):
+        self.path.append(self.current_position.copy())  # 更新路径表
         # 碰到出口
         if self.current_position == self.exit:
             self.value = 6
@@ -86,7 +90,6 @@ class Turtle:
         # 标记当前位置
         if self.value == 0:
             self.value = 2
-        self.path.append(self.current_position.copy())  # 记录历史路径,方便回溯
         # 依次尝试上下左右四个方向
         for direction in range(4):
             if self.set_position(direction):
@@ -95,12 +98,22 @@ class Turtle:
                 else:
                     self.current_position = self.path.pop()
                     continue
-        if not self.path:
+        if self.current_position == self.start:
             print("寻找路径失败")
-            return False  # 如果没有路径可回退，返回False
+            return False
 
     def __str__(self):
         return np.array2string(self.mar)
+
+def plot_labyrinth(matrix):
+    # 定义颜色映射
+    cmap = mcolors.ListedColormap(['white', 'black', 'red', 'blue', 'green', 'yellow'])
+    bounds = [0, 1, 2, 3, 4, 5, 6]
+    norm = mcolors.BoundaryNorm(bounds, cmap.N)
+
+    plt.imshow(matrix, cmap=cmap, norm=norm)
+    plt.colorbar(ticks=[0, 1, 2, 3, 4, 5, 6])
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -109,3 +122,4 @@ if __name__ == '__main__':
     turtle = Turtle(labyrinth)
     turtle.move()
     print(turtle)
+    plot_labyrinth(turtle.mar)
