@@ -1,5 +1,8 @@
 import numpy as np
 import random as rd
+import sys
+
+sys.setrecursionlimit(10000)
 
 
 class Labyrinth:
@@ -30,19 +33,20 @@ class Labyrinth:
         del mask, self.enter_col, self.exit_col
 
     def __str__(self):
-        return print(self.matrix)
+        return np.array2string(self.matrix)
 
 
 class Turtle:
     def __init__(self, mar):
         """
-        初始化海龟的初始位置,起点,所在的位置,所在位置的值
+        初始化海龟的初始位置,起点,所在的位置,所在位置的值,并初始化一个记录海龟路径的栈
         :param mar: 传入的迷宫矩阵
         """
         self.mar = mar.matrix
         self.start = mar.enter
         self.exit = mar.exit
         self.current_position = self.start
+        self.path = []
         del mar
 
     @property
@@ -56,49 +60,44 @@ class Turtle:
     def position(self):
         return self.current_position
 
-    def setposition(self, position):
-        """
-        向上下左右四个方向分别尝试探索,若可行则标记现在的地点并前进
-        :param position: 0, 1 ,2, 3 四个参数代表上下左右四个方向
-        :return: bool ,可行为True
-        """
-        row = self.current_position[0]
-        col = self.current_position[1]
-        if position == 0 and int(self.mar[row - 1][col]) == 0:
-            self.current_position[0] -= 1  # 向指定方向移动
+    def set_position(self, direction):
+        row, col = self.current_position
+        if direction == 0 and row > 1 and self.mar[row - 1, col] == 0:
+            self.current_position = [row - 1, col]
             return True
-        elif position == 1 and int(self.mar[row + 1][col]) == 0:
-            self.current_position[0] += 1
+        elif direction == 1 and row < self.mar.shape[0] - 2 and self.mar[row + 1, col] == 0:
+            self.current_position = [row + 1, col]
             return True
-        elif position == 2 and int(self.mar[row][col - 1]) == 0:
-            self.current_position[1] -= 1
+        elif direction == 2 and col > 1 and self.mar[row, col - 1] == 0:
+            self.current_position = [row, col - 1]
             return True
-        elif position == 3 and int(self.mar[row][col + 1]) == 0:
-            self.current_position[1] += 1
+        elif direction == 3 and col < self.mar.shape[1] - 2 and self.mar[row, col + 1] == 0:
+            self.current_position = [row, col + 1]
             return True
-        else:
-            return False
+        return False
 
+    # 这个海龟有点蠢
     def move(self):
         # 碰到出口
         if self.current_position == self.exit:
+            print("找到出口")
             return True
-
         # 标记当前位置
         if self.value == 0:
             self.value = 2
-
+        self.path.append(self.current_position.copy())  # 记录历史路径,方便回溯
         # 依次尝试上下左右四个方向
         for direction in range(4):
-            if self.setposition(direction):
-                if self.move():  # 如果找到出口，立刻返回True
+            if self.set_position(direction):
+                if self.move():  # 如果成功找到出口，返回True
                     return True
                 else:
-                    return False  # 如果所有方向都走不通，返回False
+                    self.current_position = self.path.pop()
+                    continue
+        return False  # 如果没有路径可回退，返回False
 
     def __str__(self):
         return print(self.mar)
-
 
 if __name__ == '__main__':
     labyrinth = Labyrinth(10, 10, 0.7)
