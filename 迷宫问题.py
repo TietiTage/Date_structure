@@ -50,6 +50,7 @@ class Turtle:
         self.exit = mar.exit
         self.current_position = self.start.copy()
         self.path = []
+        self.path.append(self.current_position)
         del mar
 
     @property
@@ -65,59 +66,71 @@ class Turtle:
 
     def set_position(self, direction):
         row, col = self.current_position
-        if direction == 0 and row > 1 and self.mar[row - 1, col] == 0:
+        if direction == 0:
             self.current_position = [row - 1, col]
-            return True
-        elif direction == 1 and row < self.mar.shape[0] - 2 and self.mar[row + 1, col] == 0:
+        elif direction == 1:
             self.current_position = [row + 1, col]
-            return True
-        elif direction == 2 and col > 1 and self.mar[row, col - 1] == 0:
+        elif direction == 2:
             self.current_position = [row, col - 1]
-            return True
-        elif direction == 3 and self.mar[row, col + 1] == 0:  # 这里可能涉及到迷宫的出口,需要特别注意
+        elif direction == 3:  # 这里可能涉及到迷宫的出口,需要特别注意
             self.current_position = [row, col + 1]
+
+    def is_position_available(self, direction):
+        row, col = self.current_position
+        if direction == 0 and row > 1 and self.mar[row - 1, col] < 0.5:
             return True
-        return False
+        elif direction == 1 and row < self.mar.shape[0] - 2 and self.mar[row + 1, col] < 0.5:
+            return True
+        elif direction == 2 and col > 1 and self.mar[row, col - 1] < 0.5:
+            return True
+        elif direction == 3 and self.mar[row, col + 1] < 0.5:  # 这里可能涉及到迷宫的出口,需要特别注意
+            return True
 
     # 这个海龟有点蠢
     def move(self):
-        self.path.append(self.current_position.copy())  # 更新路径表
         # 碰到出口
         if self.current_position == self.exit:
             self.value = 6
             print("找到出口")
             return True
-        # 标记当前位置
         if self.value == 0:
-            self.value = 2
-        # 依次尝试上下左右四个方向
-        for direction in range(4):
-            if self.set_position(direction):
-                if self.move():  # 如果成功找到出口，返回True
-                    return True
-                else:
-                    self.current_position = self.path.pop()
-                    continue
-        if self.current_position == self.start:
-            print("寻找路径失败")
+            self.value = 2  # 标记地点
+        if self.path == []:
+            print("失败了")
             return False
+        # 依次尝试上下左右四个方向
+        for _direction in range(4):
+            found = self.is_position_available(_direction)
+            if found:
+                self.set_position(_direction)
+                self.path.append(self.current_position)  # 标记当前地点
+                self.value = 2
+                # 如果成功找到出口，返回True
+                if self.move():  # 递归地尝试继续走
+                    return True
+            # 如果继续走没有找到出口，回溯继续找
+                else:
+                    self.current_position = self.path.pop(-1)
+                    if self.move():
+                        return True
 
     def __str__(self):
         return np.array2string(self.mar)
+
 
 def plot_labyrinth(matrix):
     # 定义颜色映射
     cmap = mcolors.ListedColormap(['white', 'black', 'red', 'blue', 'green', 'yellow'])
     bounds = [0, 1, 2, 3, 4, 5, 6]
     norm = mcolors.BoundaryNorm(bounds, cmap.N)
-
     plt.imshow(matrix, cmap=cmap, norm=norm)
     plt.colorbar(ticks=[0, 1, 2, 3, 4, 5, 6])
     plt.show()
 
 
+# 在有孤立墙壁时, 深度优先遍历有可能陷入死胡同,因此不是一个很好地解决迷宫问题的工具
 if __name__ == '__main__':
-    labyrinth = Labyrinth(10, 10, 0.7)
+    labyrinth = Labyrinth(8, 8, 0.6)
     print(labyrinth.matrix)
     turtle = Turtle(labyrinth)
     turtle.move()
