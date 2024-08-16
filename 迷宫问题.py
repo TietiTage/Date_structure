@@ -95,19 +95,14 @@ class Turtle:
             return True
         if self.value == 0:
             self.value = 2  # 标记地点
-        if self.path == []:
+        if not self.path:
             print("失败了")
             return False
         # 依次尝试上下左右四个方向
         found, direction = None, None
-        if self.is_position_available(0):
-            found, direction = self.is_position_available(0), 0
-        elif self.is_position_available(1):
-            found, direction = self.is_position_available(1), 1
-        elif self.is_position_available(2):
-            found, direction = self.is_position_available(2), 2
-        elif self.is_position_available(3):
-            found, direction = self.is_position_available(3), 3
+        for _direction in [0, 1, 2, 3]:
+            if self.is_position_available(_direction):
+                found, direction = self.is_position_available(_direction), _direction
         if found:
             self.set_position(direction)
             print(self.current_position)
@@ -116,11 +111,12 @@ class Turtle:
             # 如果成功找到出口，返回True
             if self.move():  # 递归地尝试继续走
                 return True
-        # 如果继续走没有找到出口，回溯继续找
+            # 如果继续走没有找到出口，回溯继续找
             else:
                 self.current_position = self.path.pop(-1)
                 if self.move():
                     return True
+
     def __str__(self):
         return np.array2string(self.mar)
 
