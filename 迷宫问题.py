@@ -51,7 +51,6 @@ class Turtle:
         self.current_position = self.start.copy()
         self.path = []
         self.path.append(self.current_position)
-        del mar
 
     @property
     def value(self):
