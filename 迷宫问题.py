@@ -9,6 +9,7 @@ sys.setrecursionlimit(10000)
 
 
 class Labyrinth:
+    """生成一个稀疏矩阵,作为一个迷宫"""
     def __init__(self, rows, cols, sparsity):
         """
         初始化一个0 1 构成的矩阵,0为路径,1为墙壁,同时为这个矩阵添加出入口,以列表表示
@@ -64,6 +65,7 @@ class Turtle:
         return self.current_position
 
     def set_position(self, direction):
+        """ 0 1 2 3 代表上下左右"""
         row, col = self.current_position
         if direction == 0:
             self.current_position = [row - 1, col]
@@ -71,7 +73,7 @@ class Turtle:
             self.current_position = [row + 1, col]
         elif direction == 2:
             self.current_position = [row, col - 1]
-        elif direction == 3:  # 这里可能涉及到迷宫的出口,需要特别注意
+        elif direction == 3:
             self.current_position = [row, col + 1]
 
     def is_position_available(self, direction):
@@ -114,14 +116,14 @@ class Turtle:
             else:
                 self.current_position = self.path.pop(-1)
                 print(self.current_position)
-                if len(self.path) <= 1:
-                    print("寻找出口失败,迷宫不存在解")
+                if len(self.path) == 0:
+                    print("寻找出口失败")
                     return False
                 elif self.move():
                     return True
         else:
             print("没有找到路径,尝试回溯")
-            if len(self.path) <= 1:
+            if len(self.path) == 1:
                 print("已经到达出口,无法回溯,迷宫不存在解")
                 return False
     def __str__(self):
@@ -138,10 +140,13 @@ def plot_labyrinth(matrix):
     plt.show()
 
 
-# 在有孤立墙壁时, 深度优先遍历有可能陷入死胡同,因此不是一个很好地解决迷宫问题的工具
+'''在有孤立墙壁时, 深度优先遍历有可能陷入死胡同,因此不是一个很好地解决迷宫问题的工具
+ 由于我们生成的迷宫不总是有解,所以我设置的一旦回到根节点就结束递归是不得已的.如果一定有解,那么回到根节点后,
+ 应该回到上一个节点重新进行递归调用,递归调用的结束条件改为矩阵的所有值都大于0'''
+
 if __name__ == '__main__':
-    labyrinth = Labyrinth(8, 8, 0.6)
-    print(labyrinth.matrix)
+    labyrinth = Labyrinth(20, 20, 0.7)
+    print(labyrinth)
     turtle = Turtle(labyrinth)
     turtle.move()
     print(turtle)
