@@ -75,6 +75,9 @@ class Turtle:
             self.current_position = [row, col + 1]
 
     def is_position_available(self, direction):
+        """判断路径是否可以通行,如果可以则返回True,反之则为False
+        0 1 2 3 代表上下左右"""
+
         row, col = self.current_position
         if direction == 0 and row > 1 and self.mar[row - 1, col] < 0.5:
             return True
@@ -95,7 +98,7 @@ class Turtle:
         if self.value == 0:
             self.value = 2  # 标记地点
         # 依次尝试上下左右四个方向
-        found, direction = None, None
+        found, direction = None, None # 初始化不同方向的寻找路径状态
         for _direction in [0, 1, 2, 3]:
             if self.is_position_available(_direction):
                 found, direction = self.is_position_available(_direction), _direction
