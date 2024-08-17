@@ -124,7 +124,7 @@ class Turtle:
         else:
             print("没有找到路径,尝试回溯")
             if len(self.path) == 1:
-                print("已经到达出口,无法回溯,迷宫不存在解")
+                print("已经到达出口,无法回溯,尝试失败")
                 return False
     def __str__(self):
         return np.array2string(self.mar)
@@ -145,7 +145,7 @@ def plot_labyrinth(matrix):
  应该回到上一个节点重新进行递归调用'''
 
 if __name__ == '__main__':
-    labyrinth = Labyrinth(20, 20, 0.6)
+    labyrinth = Labyrinth(30, 30, 0.7)
     print(labyrinth)
     turtle = Turtle(labyrinth)
     turtle.move()
