@@ -17,6 +17,12 @@ def dp_make_change(coinValueList, change, mincoinList):
     return mincoinList[change], counterList
 
 
-result, counter = dp_make_change([1, 5, 10, 20, 50, 100], 70, [0] * 77)
-print("最少硬币数量:", result)
-print("硬币使用情况:\n", counter)
+#
+
+def changeCoins(values):
+    coinList = np.array([1, 5, 10, 20, 50, 100])
+    changeList = np.zeros((len(coinList), values)) # 根据硬币列表的长度,和所兑换硬币的值创建
+    changeList[1][1] = 1 # 初始化,兑换一块钱只需要一块钱的硬币一个
+    for value in range(2, values+1):
+        if
+

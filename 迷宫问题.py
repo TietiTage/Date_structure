@@ -94,9 +94,6 @@ class Turtle:
             return True
         if self.value == 0:
             self.value = 2  # 标记地点
-        if not self.path:
-            print("失败了")
-            return False
         # 依次尝试上下左右四个方向
         found, direction = None, None
         for _direction in [0, 1, 2, 3]:
@@ -114,9 +111,16 @@ class Turtle:
             else:
                 self.current_position = self.path.pop(-1)
                 print(self.current_position)
-                if self.move():
+                if len(self.path) <= 1:
+                    print("寻找出口失败,迷宫不存在解")
+                    return False
+                elif self.move():
                     return True
-
+        else:
+            print("没有找到路径,尝试回溯")
+            if len(self.path) <= 1:
+                print("已经到达出口,无法回溯,迷宫不存在解")
+                return False
     def __str__(self):
         return np.array2string(self.mar)
 
