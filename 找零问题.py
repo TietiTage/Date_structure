@@ -13,7 +13,7 @@ def change(amount: int):
         for _change in [_ for _ in denominations_list if _ <= amounts]:
             if total[amounts - _change] + 1 < total[amounts]:
                 total[amounts] = total[amounts - _change] + 1
-                # 重置为 0，然后更新应选择的硬币数量
+                # 将找零的规模减小后的已知最优解赋值给当前的找零问题
                 change_matrix[amounts] = change_matrix[amounts - _change]
                 change_matrix[amounts][denominations_list.index(_change)] += 1
 
