@@ -49,38 +49,38 @@ class Turtle:
         self.mar = mar.matrix
         self.start = mar.enter
         self.exit = mar.exit
-        self.current_position = self.start.copy()
+        self.position = self.start.copy()
         self.path = []
-        self.path.append(self.current_position)
+        self.path.append(self.position)
 
     @property
     def value(self):
-        return self.mar[tuple(self.current_position)]
+        return self.mar[tuple(self.position)]
 
     @value.setter
     def value(self, value=1):
-        self.mar[tuple(self.current_position)] = value
+        self.mar[tuple(self.position)] = value
 
     def position(self):
-        return self.current_position
+        return self.position
 
     def set_position(self, direction):
         """ 0 1 2 3 代表上下左右"""
-        row, col = self.current_position
+        row, col = self.position
         if direction == 0:
-            self.current_position = [row - 1, col]
+            self.position = [row - 1, col]
         elif direction == 1:
-            self.current_position = [row + 1, col]
+            self.position = [row + 1, col]
         elif direction == 2:
-            self.current_position = [row, col - 1]
+            self.position = [row, col - 1]
         elif direction == 3:
-            self.current_position = [row, col + 1]
+            self.position = [row, col + 1]
 
     def is_position_available(self, direction):
         """判断路径是否可以通行,如果可以则返回True,反之则为False
         0 1 2 3 代表上下左右"""
 
-        row, col = self.current_position
+        row, col = self.position
         if direction == 0 and row > 1 and self.mar[row - 1, col] < 0.5:
             return True
         elif direction == 1 and row < self.mar.shape[0] - 2 and self.mar[row + 1, col] < 0.5:
@@ -93,7 +93,7 @@ class Turtle:
     # 这个海龟有点蠢
     def move(self):
         # 碰到出口
-        if self.current_position == self.exit:
+        if self.position == self.exit:
             self.value = 6
             print("找到出口")
             return True
@@ -106,16 +106,16 @@ class Turtle:
                 found, direction = self.is_position_available(_direction), _direction
         if found:
             self.set_position(direction)
-            print(self.current_position)
-            self.path.append(self.current_position)  # 标记当前地点
+            print(self.position)
+            self.path.append(self.position)  # 标记当前地点
             self.value = 2
             # 如果成功找到出口，返回True
             if self.move():  # 递归地尝试继续走
                 return True
             # 如果继续走没有找到出口，回溯继续找
             else:
-                self.current_position = self.path.pop(-1)
-                print(self.current_position)
+                self.position = self.path.pop(-1)
+                print(self.position)
                 if len(self.path) == 0:
                     print("寻找出口失败")
                     return False
