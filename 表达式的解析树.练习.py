@@ -44,6 +44,7 @@ def build_tree(expression):
 
     return t
 
+
 # def evaluate(tree):
 #     if tree.left.value.isdigit() and tree.right.value.isdigit():
 #         res =  "".join([tree.left.value, tree.value, tree.right.value])
@@ -51,13 +52,14 @@ def build_tree(expression):
 #     else:
 #         return eval(''.join([evaluate(tree.left), tree.value, evaluate(tree.right)]))
 
- # 利用前序遍历求解表达式的值
+# 利用前序遍历求解表达式的值
 def evaluate(tree):
     if tree.left is None and tree.right is None:
         return tree.value
     left_val = evaluate(tree.left)
     right_val = evaluate(tree.right)
     return eval(f'{left_val} {tree.value} {right_val}')
+
 
 def inorder_traversal(tree):
     if tree is None:
@@ -70,9 +72,8 @@ def inorder_traversal(tree):
         return str(tree.value)
 
 
-
 if __name__ == '__main__':
-    expression = "(3+(5*(4+5)))" # 必须是全括号表达式
+    expression = "(3+(5*(4+5)))"  # 必须是全括号表达式
     parse_tree = build_tree(expression)
     result = evaluate(parse_tree)
     print(result)
