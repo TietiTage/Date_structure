@@ -1,10 +1,12 @@
 # 生成一个二叉查找树
+from 树 import BinaryTree
+
+
 class TreeNode:
     """
     定义二叉查找树节点的一些性质
     """
-
-    def __init__(self, key, value, parent=None, left=None, right=None):
+    def __init__(self, key: int, value, parent=None, left=None, right=None):
         """
         初始化节点
         :param key: 键,用于排序
@@ -44,27 +46,27 @@ class TreeNode:
     def has_both_children(self):
         return self.left and self.right
 
-    def replace_node_data(self, key, value, lt, rt):
-        """
-        变更节点的数据
-        :param key: 新的键
-        :param value:
-        :param lt: 新的左子树
-        :param rt: 新的右子树
-        :return:
-        """
-        self.key = key
-        self.payload = value
-        self.left = lt
-        self.right = rt
-        if self.has_left():
-            self.left.parent = self
-        if self.has_right():
-            self.right.parent = self
+    # def replace_node_data(self, key, value, lt, rt):
+    #     """
+    #     变更节点的数据
+    #     :param key: 新的键
+    #     :param value:
+    #     :param lt: 新的左子树
+    #     :param rt: 新的右子树
+    #     :return:
+    #     """
+    #     self.key = key
+    #     self.payload = value
+    #     self.left = lt
+    #     self.right = rt
+    #     if self.has_left():
+    #         self.left.parent = self
+    #     if self.has_right():
+    #         self.right.parent = self
 
     def __iter__(self):
         """
-        实现二叉树的中序遍历,按键的升序访问所有节点并逐个返回
+        实现二叉树的中序遍历,按键的升序访问所有节点并逐个返回key
         :return:
         """
         if self.has_left():
@@ -87,10 +89,10 @@ class BinarySearchTree:
     def length(self):
         return self.size
 
-    def build(self, key, value):
+    def _build(self, key, value):
         """
-        检查bst是否为None.是,则将传入的key构建为root;
-        否则递归调用put函数构建二叉树
+        检查bst的根节点是否为None.是,则将传入的key构建为root;
+        否则递归调用put函数从根节点开始构建二叉树
         :param key:
         :param value:
         :return:
@@ -103,7 +105,7 @@ class BinarySearchTree:
 
     def put(self, key, value, current_node):
         """
-        使用TreeNode类来构建节点信息,并递归生成节点
+        使用TreeNode类来构建节点信息,并递归生成节点,根据key的大小关系构建
         :param key: 待插入的键
         :param value: 值
         :param current_node: 当前节点
@@ -126,10 +128,11 @@ class BinarySearchTree:
             current_node.payload = value
 
     def __setitem__(self, key, value):
-        self.build(key, value)
+        self._build(key, value)
 
     def __getitem__(self, key):
         if self.root:
+            # 从root节点开始查找
             res = self._get(key, self.root)
             if res:
                 return res.payload
@@ -191,10 +194,9 @@ class BinarySearchTree:
                 self.root = child
             child.parent = node.parent
 
-
         # 指定节点有两个子节点
         elif node.has_both_children():
-            # 找到后继节点（右子树中最小的节点）
+            # 找到后继节点（右子树中最小的节点）,用后继节点替代被删除的节点,并删除后继节点
             successor = self._find_min(node.right)
             node.key = successor.key
             node.payload = successor.payload
@@ -240,7 +242,9 @@ class BinarySearchTree:
         else:
             return False
 
+
 if __name__ == '__main__':
+    # 测试样例
     def test_bst():
         # 创建一个二叉查找树实例
         bst = BinarySearchTree()
@@ -251,6 +255,8 @@ if __name__ == '__main__':
         bst[15] = "Right Child"
         bst[3] = "Left Grandchild"
         bst[7] = "Right Grandchild"
+
+        print(bst.length())
 
         # 测试插入和查找功能
         assert bst[10] == "Root", "Test failed: Root node"
@@ -280,12 +286,14 @@ if __name__ == '__main__':
         bst[15] = "Right Child"
         bst[3] = "Left Grandchild"
         bst[7] = "Right Grandchild"
+        print(bst[7])
         inorder_keys = [key for key in bst.root]
         print(inorder_keys)
         assert inorder_keys == [3, 5, 7, 10, 15], "Test failed: Inorder traversal"
 
+
         print("All tests passed!")
+
 
     # 运行测试
     test_bst()
-
