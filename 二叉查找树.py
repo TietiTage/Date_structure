@@ -98,12 +98,12 @@ class BinarySearchTree:
         :return:
         """
         if self.root:
-            self.put(key, value, self.root)
+            self._put(key, value, self.root)
         else:
             self.root = TreeNode(key, value)
         self.size += 1
 
-    def put(self, key, value, current_node):
+    def _put(self, key, value, current_node):
         """
         使用TreeNode类来构建节点信息,并递归生成节点,根据key的大小关系构建
         :param key: 待插入的键
@@ -114,14 +114,14 @@ class BinarySearchTree:
         # 递归生成左子树
         if key < current_node.key:
             if current_node.has_left():
-                self.put(key, value, current_node.left)
+                self._put(key, value, current_node.left)
             # 若没有左子树,则key成为左子节点
             else:
                 current_node.left = TreeNode(key, value, parent=current_node)
         # 递归生成右子树
         elif key > current_node.key:
             if current_node.has_right():
-                self.put(key, value, current_node.right)
+                self._put(key, value, current_node.right)
             else:
                 current_node.right = TreeNode(key, value, parent=current_node)
         else:
