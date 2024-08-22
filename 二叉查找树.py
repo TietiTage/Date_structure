@@ -3,6 +3,7 @@ class TreeNode:
     """
     定义二叉查找树节点的一些性质
     """
+
     def __init__(self, key, value, parent=None, left=None, right=None):
         """
         初始化节点
@@ -66,14 +67,13 @@ class TreeNode:
         实现二叉树的中序遍历,按键的升序访问所有节点并逐个返回
         :return:
         """
-        if self:
-            if self.has_left():
-                for item in self.left: # 递归遍历左子树,递归地调用该方法
-                    yield item # 逐个返回左子树的键(通过下一行)
-            yield self.key # 完成左子树的遍历后,返回当前节点(根节点)的键
-            if self.has_right():
-                for item in self.right:
-                    yield item
+        if self.has_left():
+            for item in self.left:  # 递归遍历左子树,递归地调用该方法
+                yield item  # 逐个返回左子树的键(通过下一行)
+        yield self.key  # 完成左子树的遍历后,返回当前节点(根节点)的键
+        if self.has_right():
+            for item in self.right:
+                yield item
 
 
 class BinarySearchTree:
@@ -117,11 +117,13 @@ class BinarySearchTree:
             else:
                 current_node.left = TreeNode(key, value, parent=current_node)
         # 递归生成右子树
-        else:
+        elif key > current_node.key:
             if current_node.has_right():
                 self.put(key, value, current_node.right)
             else:
                 current_node.right = TreeNode(key, value, parent=current_node)
+        else:
+            current_node.payload = value
 
     def __setitem__(self, key, value):
         self.build(key, value)
@@ -135,6 +137,7 @@ class BinarySearchTree:
                 return None
         else:
             return None
+
     def __delitem__(self, key):
         """
         用get方法得到要删除的节点,并删除
@@ -146,7 +149,7 @@ class BinarySearchTree:
             node_to_remove = self._get(key, self.root)
             if node_to_remove:
                 self._remove(node_to_remove)
-                self.size -=1
+                self.size -= 1
             else:
                 raise KeyError("Invalid Key")
         # 只有一个节点,则重新初始化二叉树
@@ -176,29 +179,18 @@ class BinarySearchTree:
         elif node.has_any_children() and not node.has_both_children():
             # 1. 只有左子节点
             if node.has_left():
-                if node.is_left():
-                    node.parent.left = node.left
-                    node.left.parent = node.parent
-                elif node.is_right():
-                    node.parent.right = node.left
-                    node.left.parent = node.parent
-                else:
-                    # 如果是根节点
-                    self.root = node.left
-                    self.root.parent = None
+                child = node.left
+            else:
+                child = node.right
 
-            # 2. 只有右子节点
-            elif node.has_right():
-                if node.is_left():
-                    node.parent.left = node.right
-                    node.right.parent = node.parent
-                elif node.is_right():
-                    node.parent.right = node.right
-                    node.right.parent = node.parent
-                else:
-                    # 如果是根节点
-                    self.root = node.right
-                    self.root.parent = None
+            if node.is_left():
+                node.parent.left = child
+            elif node.is_right():
+                node.parent.right = child
+            else:
+                self.root = child
+            child.parent = node.parent
+
 
         # 指定节点有两个子节点
         elif node.has_both_children():
@@ -209,7 +201,8 @@ class BinarySearchTree:
             # 递归删除后继节点
             self._remove(successor)
 
-    def _find_min(self, node):
+    @staticmethod
+    def _find_min(node):
         """
         找到以node为根节点的子树中的最小节点
         :param node: 当前节点
@@ -231,7 +224,7 @@ class BinarySearchTree:
             return None
         elif current_node.key == key:  # 需要查找的节点的key与输入的key一致
             return current_node
-        elif current_node.key < key:
+        elif current_node.key > key:
             return self._get(key, current_node.left)
         else:
             return self._get(key, current_node.right)
@@ -246,3 +239,53 @@ class BinarySearchTree:
             return True
         else:
             return False
+
+if __name__ == '__main__':
+    def test_bst():
+        # 创建一个二叉查找树实例
+        bst = BinarySearchTree()
+
+        # 插入节点
+        bst[10] = "Root"
+        bst[5] = "Left Child"
+        bst[15] = "Right Child"
+        bst[3] = "Left Grandchild"
+        bst[7] = "Right Grandchild"
+
+        # 测试插入和查找功能
+        assert bst[10] == "Root", "Test failed: Root node"
+        assert bst[5] == "Left Child", "Test failed: Left child"
+        assert bst[15] == "Right Child", "Test failed: Right child"
+        assert bst[3] == "Left Grandchild", "Test failed: Left grandchild"
+        assert bst[7] == "Right Grandchild", "Test failed: Right grandchild"
+
+        # 测试删除功能
+        del bst[3]
+        assert bst[3] is None, "Test failed: Deleting left grandchild"
+        del bst[5]
+        assert bst[5] is None, "Test failed: Deleting left child"
+        del bst[10]
+        assert bst[10] is None, "Test failed: Deleting root node"
+
+        # 测试树的大小
+        assert bst.length() == 2, "Test failed: Tree size"
+
+        # 测试包含功能
+        assert 15 in bst, "Test failed: Contains right child"
+        assert 3 not in bst, "Test failed: Does not contain deleted node"
+
+        # 测试中序遍历
+        bst[10] = "Root"
+        bst[5] = "Left Child"
+        bst[15] = "Right Child"
+        bst[3] = "Left Grandchild"
+        bst[7] = "Right Grandchild"
+        inorder_keys = [key for key in bst.root]
+        print(inorder_keys)
+        assert inorder_keys == [3, 5, 7, 10, 15], "Test failed: Inorder traversal"
+
+        print("All tests passed!")
+
+    # 运行测试
+    test_bst()
+
