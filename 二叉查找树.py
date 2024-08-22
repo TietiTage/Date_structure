@@ -3,7 +3,6 @@ class TreeNode:
     """
     定义二叉查找树节点的一些性质
     """
-
     def __init__(self, key, value, parent=None, left=None, right=None):
         """
         初始化节点
@@ -104,7 +103,7 @@ class BinarySearchTree:
 
     def put(self, key, value, current_node):
         """
-
+        使用TreeNode类来构建节点信息,并递归生成节点
         :param key: 待插入的键
         :param value: 值
         :param current_node: 当前节点
@@ -136,6 +135,90 @@ class BinarySearchTree:
                 return None
         else:
             return None
+    def __delitem__(self, key):
+        """
+        用get方法得到要删除的节点,并删除
+        :param key: 待删除的节点索引
+        :return:
+        """
+        # 非根节点
+        if self.size > 1:
+            node_to_remove = self._get(key, self.root)
+            if node_to_remove:
+                self._remove(node_to_remove)
+                self.size -=1
+            else:
+                raise KeyError("Invalid Key")
+        # 只有一个节点,则重新初始化二叉树
+        elif self.size == 1 and self.root.key == key:
+            self.root = None
+            self.size -= 1
+        else:
+            raise KeyError("Invalid Key")
+
+    def _remove(self, node):
+        """
+        删除掉指定的节点,并在不改变树性质的前提下更改指针朝向
+        :param node: 节点
+        :return:
+        """
+        # 叶子节点的情况
+        if node.is_leaf():
+            if node.is_left():
+                node.parent.left = None
+            elif node.is_right():
+                node.parent.right = None
+            else:
+                # 如果是根节点且是叶子节点的情况
+                self.root = None
+
+        # 指定节点有一个子节点
+        elif node.has_any_children() and not node.has_both_children():
+            # 1. 只有左子节点
+            if node.has_left():
+                if node.is_left():
+                    node.parent.left = node.left
+                    node.left.parent = node.parent
+                elif node.is_right():
+                    node.parent.right = node.left
+                    node.left.parent = node.parent
+                else:
+                    # 如果是根节点
+                    self.root = node.left
+                    self.root.parent = None
+
+            # 2. 只有右子节点
+            elif node.has_right():
+                if node.is_left():
+                    node.parent.left = node.right
+                    node.right.parent = node.parent
+                elif node.is_right():
+                    node.parent.right = node.right
+                    node.right.parent = node.parent
+                else:
+                    # 如果是根节点
+                    self.root = node.right
+                    self.root.parent = None
+
+        # 指定节点有两个子节点
+        elif node.has_both_children():
+            # 找到后继节点（右子树中最小的节点）
+            successor = self._find_min(node.right)
+            node.key = successor.key
+            node.payload = successor.payload
+            # 递归删除后继节点
+            self._remove(successor)
+
+    def _find_min(self, node):
+        """
+        找到以node为根节点的子树中的最小节点
+        :param node: 当前节点
+        :return: 子树中的最小节点
+        """
+        current = node
+        while current.has_left():
+            current = current.left
+        return current
 
     def _get(self, key, current_node):
         """
