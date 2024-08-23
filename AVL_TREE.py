@@ -81,6 +81,17 @@ class AVLTree(BST.BinarySearchTree):
                 self._rotate_right(node)
 
     def _rotate_left(self, rot_root):
+        """
+        对于节点进行左旋操作
+            A                   B
+             \                 / \
+              B     左旋       A  C
+               \
+                C
+        其中A为rot_root,B为new_root
+        :param rot_root:
+        :return:
+        """
         new_root = rot_root.right
         rot_root.right = new_root.left
         if new_root.left is not None:
@@ -99,6 +110,17 @@ class AVLTree(BST.BinarySearchTree):
         new_root.balanceFactor = new_root.balanceFactor + 1 + max(rot_root.balanceFactor, 0)
 
     def _rotate_right(self, rot_root):
+        """
+        右旋操作
+                C               B
+               /               / \
+              B     右旋      A   C
+             /
+            A
+        其中C为rot_root,B为new_root
+        :param rot_root:
+        :return:
+        """
         new_root = rot_root.left
         rot_root.left = new_root.right
         if new_root.right is not None:
