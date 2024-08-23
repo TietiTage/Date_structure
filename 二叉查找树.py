@@ -1,5 +1,5 @@
 # 生成一个二叉查找树
-from 树 import BinaryTree
+import time
 
 
 class TreeNode:
@@ -294,6 +294,8 @@ if __name__ == '__main__':
 
         print("All tests passed!")
 
-
+    a = time.perf_counter()
     # 运行测试
     test_bst()
+    b = time.perf_counter()
+    print("Process time: ",b - a)

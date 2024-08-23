@@ -1,6 +1,7 @@
 # 实现一个AVL树
 # 继承之前已经实现的二叉查找树,重写_put方法,并实现调整平衡和旋转的代码
 import 二叉查找树 as BST
+import time
 
 
 class AVLTreeNode(BST.TreeNode):
@@ -167,6 +168,9 @@ def test_avl_tree():
     assert inorder_keys == [3, 5, 7, 10, 13, 15, 17], "Test failed: Inorder traversal"
 
     print("All tests passed!")
-
+a = time.perf_counter()
 # 运行测试
 test_avl_tree()
+
+b = time.perf_counter()
+print(f"Time taken: {b-a}")
