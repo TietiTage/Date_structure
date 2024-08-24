@@ -1,5 +1,6 @@
 # 实现一个AVL树
 # 继承之前已经实现的二叉查找树,重写_put方法,并实现调整平衡和旋转的代码
+# 难得一批
 import 二叉查找树 as BST
 import time
 
@@ -47,24 +48,25 @@ class AVLTree(BST.BinarySearchTree):
         else:
             current_node.payload = value
 
-    def _modify_balance(self, node: AVLTreeNode):
-        """
-        根据平衡因子,调整负载
-        :param node: 需要调整负载的节点
-        :return:
-        """
-        if node.balanceFactor > 1 or node.balanceFactor < -1:
-            self._retrim(node)
-            return
-        # 对父节点的负载进行更新
-        if node.parent is not None:
-            if node.is_left():
-                node.parent.balanceFactor += 1
-            elif node.is_right():
-                node.parent.balanceFactor -= 1
-            # 若调整后不为0,递归更新父节点的负载
-            if node.parent.balanceFactor != 0:
-                self._modify_balance(node.parent)
+    # 如果_put没有实现自动平衡的机制,每次插入都应该手动调用modify以实现平衡,但这里不必要
+    # def modify_balance(self, node: AVLTreeNode):
+    #     """
+    #     根据平衡因子,调整负载
+    #     :param node: 需要调整负载的节点
+    #     :return:
+    #     """
+    #     if node.balanceFactor > 1 or node.balanceFactor < -1:
+    #         self._retrim(node)
+    #         return
+    #     # 对父节点的负载进行更新
+    #     if node.parent is not None:
+    #         if node.is_left():
+    #             node.parent.balanceFactor += 1
+    #         elif node.is_right():
+    #             node.parent.balanceFactor -= 1
+    #         # 若调整后不为0,递归更新父节点的负载
+    #         if node.parent.balanceFactor != 0:
+    #             self.modify_balance(node.parent)
 
     def _retrim(self, node):
         if node.balanceFactor < 0:
@@ -82,18 +84,22 @@ class AVLTree(BST.BinarySearchTree):
 
     def _rotate_left(self, rot_root):
         """
-        对于节点进行左旋操作
-            A                   B
-             \                 / \
-              B     左旋       A  C
-               \
-                C
+        对于节点进行左旋操作,对于高处的不平衡节点,进行平衡,对于底层的不平衡节点,保证不增加不平衡性
+              A                   B
+               \                 / \
+               B     左旋       A   C
+          (  / ) \          ( / )
+         (  D )   C        ( D )
+         需要根据A D 之间的大小关系判断D在A的哪个子树,但可以肯定D的父树一定是A
+         大多数情况下D不存在,但为了增加鲁棒性,还是增加一个判断为好
         其中A为rot_root,B为new_root
         :param rot_root:
         :return:
         """
+        # 对节点的指针指向进行更新
         new_root = rot_root.right
         rot_root.right = new_root.left
+        # 增加鲁棒性
         if new_root.left is not None:
             new_root.left.parent = rot_root
         new_root.parent = rot_root.parent
@@ -106,6 +112,8 @@ class AVLTree(BST.BinarySearchTree):
                 rot_root.parent.right = new_root
         new_root.left = rot_root
         rot_root.parent = new_root
+
+        # 更改平衡因子,这里由于C D节点可能不存在,所以需要使用min max
         rot_root.balanceFactor = rot_root.balanceFactor + 1 - min(new_root.balanceFactor, 0)
         new_root.balanceFactor = new_root.balanceFactor + 1 + max(rot_root.balanceFactor, 0)
 
@@ -137,6 +145,7 @@ class AVLTree(BST.BinarySearchTree):
         rot_root.parent = new_root
         rot_root.balanceFactor = rot_root.balanceFactor - 1 - max(new_root.balanceFactor, 0)
         new_root.balanceFactor = new_root.balanceFactor - 1 + min(rot_root.balanceFactor, 0)
+
 
 def test_avl_tree():
     # 创建一个 AVL 树实例
@@ -190,9 +199,11 @@ def test_avl_tree():
     assert inorder_keys == [3, 5, 7, 10, 13, 15, 17], "Test failed: Inorder traversal"
 
     print("All tests passed!")
+
+
 a = time.perf_counter()
 # 运行测试
 test_avl_tree()
 
 b = time.perf_counter()
-print(f"Time taken: {b-a}")
+print(f"Time taken: {b - a}")

@@ -31,7 +31,7 @@ class Vertex:
 class Graph:
     def __init__(self):
         """
-        初始话节点列表,节点数量
+        初始化节点列表,节点数量
         """
         self.vertDict = {}
         self.numVertices = 0
