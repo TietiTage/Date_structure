@@ -78,8 +78,8 @@ def find_path(source: tuple):
     # 终止条件：栈中节点数达到64，即找到完整路径
     if len(stack) == 64:
         return True
-    #
-    # 遍历邻接节点,采用启发式算法
+
+    # 遍历邻接节点,采用启发式算法(Warnsdorff规则)
     for _neighbor in sort_neighbors(source_node):
         next_node = graph.vertDict[_neighbor]
         if next_node.color == "white":

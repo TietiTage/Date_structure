@@ -7,7 +7,7 @@ import queue as q
 class GraphNode(Graph.Vertex):
     __slots__ = ("__predecessor", "__distance", "__color")
     """
-    设置广度优先遍历的节点属性和方法
+    设置图的节点属性和方法
     """
 
     def __init__(self, key):
@@ -16,12 +16,16 @@ class GraphNode(Graph.Vertex):
         self.__predecessor = None 前驱节点
         self.__distance = 0 距离起始节点的距离
         self.__color = 'white' 白色为未发现 灰色为已经发现 黑色为已经探索
+        self.__startTime = 0 开始探索时,算法的总步数
+        self.__finishTime = None 结束对于某个节点的所有邻接节点的探索时,算法的总步数
         :param key:
         """
         super().__init__(key)
         self.__predecessor = None
         self.__distance = 0
         self.__color = 'white'
+        self.__startTime = 0
+        self.__finishTime = None
 
     @property
     def predecessor(self):
@@ -41,6 +45,7 @@ class GraphNode(Graph.Vertex):
             self.__color = color
         else:
             raise ValueError("Color must be 'grey' or 'black' or 'white' ")
+
     @property
     def distance(self):
         return self.__distance
@@ -48,6 +53,12 @@ class GraphNode(Graph.Vertex):
     @distance.setter
     def distance(self, distance):
         self.__distance = distance
+    def setFinish(self, finishTime):
+        self.__finishTime = finishTime
+
+    def setStart(self, startTime):
+        self.__startTime = startTime
+
 
 
 class WordGraph(Graph.Graph):
@@ -86,6 +97,8 @@ def build_graph(output_file):
                     # 所有相差一个字母的单词都建立了关联
 
     return g
+
+
 def traverse(y):
     """
     从目标单词回溯到起始单词
@@ -97,6 +110,7 @@ def traverse(y):
         print(x.get_id())
         x = x.predecessor
     print(x.get_id())
+
 
 def find_shortest_path(gr: WordGraph, source: str, target: str):
     """
@@ -129,8 +143,6 @@ def find_shortest_path(gr: WordGraph, source: str, target: str):
     traverse(gra.vertDict[target])
 
 
-
 if __name__ == '__main__':
     gra = build_graph(output_file="output_file.txt")
     find_shortest_path(gra, "find", "holy")
-
