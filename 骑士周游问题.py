@@ -48,9 +48,24 @@ def is_visited_all_neighbors(pos):
     return True
 
 
+def sort_neighbors(pos):
+    """
+    对pos的邻接节点字典进行排列，按邻接节点的未访问邻接节点的数量，由低到高排列，返回一个列表
+    :param pos: 当前节点
+    :return: 排序后的邻接节点列表
+    """
+    pos_neighbors = pos.get_neighbors()
+    sorted_neighbors = sorted(
+        pos_neighbors,
+        key=lambda neighbor: len(
+            [n for n in graph.vertDict[neighbor].get_neighbors() if graph.vertDict[n].color == "white"])
+    )
+    return sorted_neighbors
+
+
 def find_path(source: tuple):
     """
-    寻找从起始点到所有可能点的路径,使用深度优先遍历
+    寻找从起始点到所有可能点的路径,使用深度优先遍历,采用启发式算法
     :param source: 起始坐标
     :return:
     """
@@ -63,9 +78,9 @@ def find_path(source: tuple):
     # 终止条件：栈中节点数达到64，即找到完整路径
     if len(stack) == 64:
         return True
-
-    # 遍历邻接节点
-    for _neighbor in source_node.get_neighbors():
+    #
+    # 遍历邻接节点,采用启发式算法
+    for _neighbor in sort_neighbors(source_node):
         next_node = graph.vertDict[_neighbor]
         if next_node.color == "white":
             next_node.predecessor = source_node
@@ -77,18 +92,12 @@ def find_path(source: tuple):
     source_node.color = "white"
     return False
 
+
 if __name__ == '__main__':
     generate_path()
-    if find_path((0, 0)):
+    if find_path((4, 4)):
         print("找到完整路径：")
         for node in stack:
             print(node.id)
     else:
         print("未找到完整路径")
-
-
-
-
-if __name__ == '__main__':
-    generate_path()
-    find_path((0, 0))
