@@ -13,9 +13,9 @@ class GraphNode(Graph.Vertex):
     def __init__(self, key):
         """
         调用父类当中的初始化方法,并设置:
-        self._predecessor = None 前驱节点
-        self._distance = 0 距离起始节点的距离
-        self._color = 'white' 白色为未发现 灰色为已经发现 黑色为已经探索
+        self.__predecessor = None 前驱节点
+        self.__distance = 0 距离起始节点的距离
+        self.__color = 'white' 白色为未发现 灰色为已经发现 黑色为已经探索
         :param key:
         """
         super().__init__(key)
@@ -37,10 +37,10 @@ class GraphNode(Graph.Vertex):
 
     @color.setter
     def color(self, color):
-        if color in ['grey', "black"]:
+        if color in ['grey', "black", "white"]:
             self.__color = color
         else:
-            raise ValueError("Color must be 'grey' or 'black'")
+            raise ValueError("Color must be 'grey' or 'black' or 'white' ")
     @property
     def distance(self):
         return self.__distance
@@ -50,7 +50,7 @@ class GraphNode(Graph.Vertex):
         self.__distance = distance
 
 
-class WordGragh(Graph.Graph):
+class WordGraph(Graph.Graph):
     def add_vertex(self, key):
         self.numVertices += 1
         self.vertDict[key] = GraphNode(key)
@@ -64,7 +64,7 @@ def build_graph(output_file):
     :return:
     """
     d = {}  # 存储堆的字典,每个堆都是一个列表
-    g = WordGragh()
+    g = WordGraph()
     with open(output_file, encoding="utf-8", mode="r") as f:
 
         # 创建桶,每个桶当中的单词都只有一个字母的差异.
@@ -98,7 +98,7 @@ def traverse(y):
         x = x.predecessor
     print(x.get_id())
 
-def find_shortest_path(gr: WordGragh, source: str, target: str):
+def find_shortest_path(gr: WordGraph, source: str, target: str):
     """
     寻找两个单词之间的最短的变化路径,使用广度优先遍历
     :param gr: 存储单词的图
