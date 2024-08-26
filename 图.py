@@ -12,6 +12,10 @@ class Vertex:
         self.neighbors[vert.id] = weight
 
     def get_neighbors(self):
+        """
+        返回当前节点的邻接节点的索引集合
+        :return:
+        """
         return self.neighbors.keys()
 
     def __str__(self):
@@ -19,7 +23,6 @@ class Vertex:
 
     def get_id(self):
         return self.id
-
 
     def get_weight(self, key):
         if key in self.neighbors:

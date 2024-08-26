@@ -1,7 +1,7 @@
 # 动手自己实现一个二叉堆(最小堆)
 # 使用这个二叉堆进行堆排序
 class BinaryHeap:
-    def __init__(self):
+    def __init__(self) :
         self.heap = [0]  # 加入0方便索引
         self.current_size = 0
 

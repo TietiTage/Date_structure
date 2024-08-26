@@ -2,7 +2,8 @@
 # 词梯问题,将相差一个字母的单词组成一个堆,并将堆当中的单词链接
 import 图 as Graph
 import queue as q
-
+import sys
+import functools
 
 class GraphNode(Graph.Vertex):
     __slots__ = ("__predecessor", "__distance", "__color")
@@ -22,7 +23,7 @@ class GraphNode(Graph.Vertex):
         """
         super().__init__(key)
         self.__predecessor = None
-        self.__distance = 0
+        self.__distance = sys.maxsize
         self.__color = 'white'
         self.__startTime = 0
         self.__finishTime = None
@@ -58,6 +59,11 @@ class GraphNode(Graph.Vertex):
 
     def setStart(self, startTime):
         self.__startTime = startTime
+
+    @functools.total_ordering
+    def __ge__(self, other):
+        if self.__distance > other.__distance:
+            return True
 
 
 
